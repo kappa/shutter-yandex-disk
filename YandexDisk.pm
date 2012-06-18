@@ -118,7 +118,7 @@ sub upload {
         $webdav->put($upload_filename)
             or die "Cannot upload to Screenshots";
          
-        $self->{_links}->{'direct_link'} = 'https://mail.yandex.ru/neo2/#disk/disk/Screenshots';
+        $self->{_links}->{'direct_link'} = 'https://mail.yandex.com/neo2/#disk/disk/Screenshots';
  
         #set success code (200)
         $self->{_links}{'status'} = 200;
