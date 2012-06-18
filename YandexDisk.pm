@@ -93,7 +93,6 @@ sub upload {
             -user   => $username,
             -pass   => $password,
             -url    => $url,
-            -realm  => 'Yandex.Disk',
         );
         unless ($webdav->open(-url => $url)) {
             $self->{_links}{status} = 999;
