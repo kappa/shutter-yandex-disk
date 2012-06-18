@@ -1,4 +1,3 @@
-shutter-yandex-disk
-===================
+=head1 shutter-yandex-disk
 
 Shutter upload plugin for Yandex.Disk service
