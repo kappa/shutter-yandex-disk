@@ -26,3 +26,10 @@ password in the Preferences dialog, page Upload.
 
 Then it will show up in your Upload dialog along with all other
 services that Shutter supports.
+
+=head1 Bugs
+
+No automatic publishing. You will need to publish files manually after
+upload.
+
+No OAuth support.
