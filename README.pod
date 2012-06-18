@@ -1,3 +1,28 @@
-=head1 shutter-yandex-disk
+=head1 Yandex.Disk upload plugin
 
-Shutter upload plugin for Yandex.Disk service
+
+This is Shutter upload plugin for Yandex.Disk service.
+For Shutter, see http://shutter-project.org and it is probably
+available in your distro package repository.
+
+Installing Shutter is easy in Ubuntu:
+
+	$ sudo apt-get install shutter
+
+This plugin requires HTTP::DAV Perl module from CPAN. To install
+either use CPAN:
+
+	$ sudo cpan install HTTP::DAV
+
+or your package repository:
+
+	$ sudo apt-get install libhttp-dav-perl
+
+Then put the file YandexDisk.pm into
+/usr/share/shutter/resources/system/upload_plugins/upload/ directory.
+
+Now you need to run Shutter and configure your Yandex login and
+password in the Preferences dialog, page Upload.
+
+Then it will show up in your Upload dialog along with all other
+services that Shutter supports.
