@@ -30,6 +30,7 @@ use utf8;
 use strict;
 use POSIX qw/setlocale/;
 use Locale::gettext;
+use File::Basename;
 use Glib qw/TRUE FALSE/;
  
 use Shutter::Upload::Shared;
@@ -84,9 +85,10 @@ sub upload {
     utf8::encode $password;
     utf8::encode $username;
  
-    #examples related to the sub 'init'
     my $webdav = HTTP::DAV->new;
     my $url = 'https://webdav.yandex.ru';
+    my $dir = 'Screenshots';
+    my $basename = basename($upload_filename);
  
     eval{
         $webdav->credentials(
@@ -109,19 +111,23 @@ sub upload {
      
     #upload the file
     eval{
-        if (!$webdav->cwd('Screenshots')) {
-            $webdav->mkcol('Screenshots')
-                and $webdav->cwd('Screenshots')
-                    or die "Cannot open Screenshots directory\n";
+        if (!$webdav->cwd($dir)) {
+            $webdav->mkcol($dir)
+                and $webdav->cwd($dir)
+                    or die "Cannot open $dir directory: " . $webdav->message . "\n";
         }
-        $webdav->put($upload_filename)
-            or die "Cannot upload to Screenshots";
+        $webdav->put(-local => $upload_filename, -url => "/$dir/$basename")
+            or die "Cannot upload to $dir: " . $webdav->message . "\n";
          
-        $self->{_links}->{'direct_link'} = 'https://mail.yandex.com/neo2/#disk/disk/Screenshots';
+        my $ua = $webdav->get_user_agent();
+        my $resp = $ua->post("$url/$dir/$basename?publish");
+        $resp->code() == 302
+            or die "Cannot publish $basename: " . $resp->message . "\n";
+
+        $self->{_links}->{'direct_link'} = $resp->header('Location');
  
         #set success code (200)
         $self->{_links}{'status'} = 200;
-         
     };
     if($@){
         $self->{_links}{'status'} = $@;
