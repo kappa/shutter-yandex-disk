@@ -26,10 +26,10 @@ package YandexDisk;
  
 use lib "$ENV{SHUTTER_ROOT}/share/shutter/resources/modules";
  
-use utf8;
 use strict;
 use Locale::gettext;
 use File::Basename;
+use URI::Escape;
 use Glib qw/TRUE FALSE/;
  
 use parent qw/Shutter::Upload::Shared/;
@@ -71,6 +71,7 @@ sub upload {
     $self->{_username} = $username;
     $self->{_password} = $password;
  
+    # convert from characters to octets in-place
     utf8::encode $upload_filename;
     utf8::encode $password;
     utf8::encode $username;
@@ -78,7 +79,7 @@ sub upload {
     my $webdav = HTTP::DAV->new;
     my $url = 'https://webdav.yandex.ru';
     my $dir = 'Screenshots';
-    my $basename = basename($upload_filename);
+    my $basename = uri_escape(basename($upload_filename));
  
     # this code is strange, but it's taken from Shutter
     # plugin template
@@ -113,7 +114,7 @@ sub upload {
         $resp->code() == 302
             or die "Cannot publish $basename: " . $resp->message . "\n";
 
-        $self->{_links}->{direct_link} = $resp->header('Location');
+        $self->{_links}{direct_link} = $resp->header('Location');
  
         $self->{_links}{status} = 200;
     };
