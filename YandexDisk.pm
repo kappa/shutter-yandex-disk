@@ -28,13 +28,11 @@ use lib "$ENV{SHUTTER_ROOT}/share/shutter/resources/modules";
  
 use utf8;
 use strict;
-use POSIX qw/setlocale/;
 use Locale::gettext;
 use File::Basename;
 use Glib qw/TRUE FALSE/;
  
-use Shutter::Upload::Shared;
-our @ISA = qw(Shutter::Upload::Shared);
+use parent qw/Shutter::Upload::Shared/;
  
 my $d = Locale::gettext->domain("shutter-upload-plugins");
 $d->dir($ENV{SHUTTER_INTL});
@@ -51,17 +49,13 @@ my %upload_plugin_info = (
 binmode(STDOUT, ":utf8");
 if (exists $upload_plugin_info{$ARGV[0]}) {
     print $upload_plugin_info{$ARGV[0]};
-    exit;
 }
  
 sub new {
     my $class = shift;
- 
-    #call constructor of super class (host, debug_cparam, shutter_root, gettext_object, main_gtk_window, ua)
-    my $self = $class->SUPER::new(shift, shift, shift, shift, shift, shift);
- 
+
+    my $self = $class->SUPER::new(@_);
     bless $self, $class;
-    return $self;
 }
  
 sub init {
@@ -86,6 +80,8 @@ sub upload {
     my $dir = 'Screenshots';
     my $basename = basename($upload_filename);
  
+    # this code is strange, but it's taken from Shutter
+    # plugin template
     eval{
         $webdav->credentials(
             -user   => $username,
@@ -94,18 +90,15 @@ sub upload {
         );
         unless ($webdav->open(-url => $url)) {
             $self->{_links}{status} = 999;
-            return;
+            die $webdav->message;
         }
     };
-    if ($@){
-        $self->{_links}{status} = $@;
-        return %{ $self->{_links} };
-    }
-    if ($self->{_links}{status} == 999){
+    if ($@) {
+        $self->{_links}{status} ||= $@;
         return %{ $self->{_links} };
     }
      
-    #upload the file
+    # and this is actual upload code
     eval{
         if (!$webdav->cwd($dir)) {
             $webdav->mkcol($dir)
@@ -124,7 +117,7 @@ sub upload {
  
         $self->{_links}{status} = 200;
     };
-    if ($@){
+    if ($@) {
         $self->{_links}{status} = $@;
     }
      
