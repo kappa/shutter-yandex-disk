@@ -24,7 +24,7 @@
  
 package YandexDisk;
  
-use lib $ENV{'SHUTTER_ROOT'}.'/share/shutter/resources/modules';
+use lib "$ENV{SHUTTER_ROOT}/share/shutter/resources/modules";
  
 use utf8;
 use strict;
@@ -37,46 +37,42 @@ use Shutter::Upload::Shared;
 our @ISA = qw(Shutter::Upload::Shared);
  
 my $d = Locale::gettext->domain("shutter-upload-plugins");
-$d->dir( $ENV{'SHUTTER_INTL'} );
+$d->dir($ENV{SHUTTER_INTL});
  
 my %upload_plugin_info = (
-    'module'                        => "YandexDisk",
-    'url'                           => "https://mail.yandex.com/neo2/#disk",
-    'registration'                  => "http://disk.yandex.ru/",
-    'description'                   => $d->get("Upload screenshots to Yandex.Disk"),
-    'supports_anonymous_upload'     => FALSE,
-    'supports_authorized_upload'    => TRUE,
+    module                        => "YandexDisk",
+    url                           => "https://mail.yandex.com/neo2/#disk",
+    registration                  => "http://disk.yandex.ru/",
+    description                   => $d->get("Upload screenshots to Yandex.Disk"),
+    supports_anonymous_upload     => FALSE,
+    supports_authorized_upload    => TRUE,
 );
  
-binmode( STDOUT, ":utf8" );
-if ( exists $upload_plugin_info{$ARGV[ 0 ]} ) {
-    print $upload_plugin_info{$ARGV[ 0 ]};
+binmode(STDOUT, ":utf8");
+if (exists $upload_plugin_info{$ARGV[0]}) {
+    print $upload_plugin_info{$ARGV[0]};
     exit;
 }
- 
  
 sub new {
     my $class = shift;
  
     #call constructor of super class (host, debug_cparam, shutter_root, gettext_object, main_gtk_window, ua)
-    my $self = $class->SUPER::new( shift, shift, shift, shift, shift, shift );
+    my $self = $class->SUPER::new(shift, shift, shift, shift, shift, shift);
  
     bless $self, $class;
     return $self;
 }
  
 sub init {
-    my $self = shift;
- 
     use HTTP::DAV;
-     
-    return TRUE;    
+
+    return TRUE;
 }
  
 sub upload {
-    my ( $self, $upload_filename, $username, $password ) = @_;
+    my ($self, $upload_filename, $username, $password) = @_;
  
-    #store as object vars
     $self->{_filename} = $upload_filename;
     $self->{_username} = $username;
     $self->{_password} = $password;
@@ -101,11 +97,11 @@ sub upload {
             return;
         }
     };
-    if($@){
-        $self->{_links}{'status'} = $@;
+    if ($@){
+        $self->{_links}{status} = $@;
         return %{ $self->{_links} };
     }
-    if($self->{_links}{'status'} == 999){
+    if ($self->{_links}{status} == 999){
         return %{ $self->{_links} };
     }
      
@@ -124,16 +120,14 @@ sub upload {
         $resp->code() == 302
             or die "Cannot publish $basename: " . $resp->message . "\n";
 
-        $self->{_links}->{'direct_link'} = $resp->header('Location');
+        $self->{_links}->{direct_link} = $resp->header('Location');
  
-        #set success code (200)
-        $self->{_links}{'status'} = 200;
+        $self->{_links}{status} = 200;
     };
-    if($@){
-        $self->{_links}{'status'} = $@;
+    if ($@){
+        $self->{_links}{status} = $@;
     }
      
-    #and return links
     return %{ $self->{_links} };
 }
  
