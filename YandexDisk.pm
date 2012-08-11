@@ -63,6 +63,23 @@ sub init {
 
     return TRUE;
 }
+
+# conjure up a filename that will not clobber existing files
+sub will_not_clobber {
+    my ($new_file, @existing) = @_;
+
+    my %existing = map { $_ => 1 } @existing;
+    my ($filename, $ext) = split /\./, $new_file;
+    my $rv = $new_file;
+    my $count = 1;
+
+    while ($existing{$rv}) {
+        $rv = "$filename-$count" . ($ext ? ".$ext" : "");
+        ++$count;
+    }
+
+    return $rv;
+}
  
 sub upload {
     my ($self, $upload_filename, $username, $password) = @_;
@@ -106,12 +123,18 @@ sub upload {
                 and $webdav->cwd($dir)
                     or die "Cannot open $dir directory: " . $webdav->message . "\n";
         }
+        my $r = $webdav->propfind("")
+            or die "Cannot PROPFIND $dir: " . $webdav->message . "\n";
+
+        $basename = will_not_clobber($basename,
+            map { basename($_->get_uri->path) } $r->get_resourcelist->get_resources);
+
         $webdav->put(-local => $upload_filename, -url => "/$dir/$basename")
             or die "Cannot upload to $dir: " . $webdav->message . "\n";
          
-        my $ua = $webdav->get_user_agent();
+        my $ua = $webdav->get_user_agent;
         my $resp = $ua->post("$url/$dir/$basename?publish");
-        $resp->code() == 302
+        $resp->code == 302
             or die "Cannot publish $basename: " . $resp->message . "\n";
 
         $self->{_links}{direct_link} = $resp->header('Location');
