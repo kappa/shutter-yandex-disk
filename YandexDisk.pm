@@ -126,8 +126,11 @@ sub upload {
         my $r = $webdav->propfind("")
             or die "Cannot PROPFIND $dir: " . $webdav->message . "\n";
 
-        $basename = will_not_clobber($basename,
-            map { basename($_->get_uri->path) } $r->get_resourcelist->get_resources);
+        # if found anything then try not to clobber
+        if ($r->get_resourcelist) {
+            $basename = will_not_clobber($basename,
+                map { basename($_->get_uri->path) } $r->get_resourcelist->get_resources);
+        }
 
         $webdav->put(-local => $upload_filename, -url => "/$dir/$basename")
             or die "Cannot upload to $dir: " . $webdav->message . "\n";
