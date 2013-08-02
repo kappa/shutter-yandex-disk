@@ -29,7 +29,4 @@ services that Shutter supports.
 
 =head1 Bugs
 
-No automatic publishing. You will need to publish files manually after
-upload.
-
 No OAuth support.
